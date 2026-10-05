@@ -1,3 +1,5 @@
+using CalculateurAge.Views;
+
 namespace CalculateurAge;
 
 public partial class MainPage : ContentPage
@@ -7,11 +9,11 @@ public partial class MainPage : ContentPage
         InitializeComponent();
     }
 
-    private void OnCalculerClicked(object sender, EventArgs e)
+    private async void OnCalculerClicked(object sender, EventArgs e)
     {
         if (string.IsNullOrWhiteSpace(entryNom.Text))
         {
-            DisplayAlert("Erreur", "Entrez un nom", "OK");
+            await DisplayAlert("Erreur", "Entrez un nom", "OK");
             return;
         }
 
@@ -20,7 +22,6 @@ public partial class MainPage : ContentPage
 
         if (d.Date > DateTime.Today.AddYears(-age)) age--;
 
-        lblResultat.Text = $"{entryNom.Text}, vous avez {age} ans";
-        lblResultat.IsVisible = true;
+        await Shell.Current.GoToAsync($"{nameof(ResultatPage)}?nom={entryNom.Text}&age={age}");
     }
 }
