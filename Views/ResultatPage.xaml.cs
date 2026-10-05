@@ -4,8 +4,8 @@ namespace CalculateurAge.Views;
 [QueryProperty(nameof(Age), "age")]
 public partial class ResultatPage : ContentPage
 {
-    public string Nom { get; set; }
-    public string Age { get; set; }
+    public string Nom { get; set; } = string.Empty;
+    public string Age { get; set; } = string.Empty;
 
     public ResultatPage() => InitializeComponent();
 

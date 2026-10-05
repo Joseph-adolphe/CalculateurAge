@@ -20,7 +20,7 @@ public class CalculateurViewModel : BaseViewModel
     public DateTime DateNaissance
     {
         get => _dateNaissance;
-        set => SetField(ref _dateNaissance, value);
+        set { if (SetField(ref _dateNaissance, value)) CalculerCommand.Rafraichir(); }
     }
 
     public string Resultat
@@ -60,18 +60,15 @@ public class CalculateurViewModel : BaseViewModel
 
     private void Calculer()
     {
-        int age = DateTime.Today.Year - DateNaissance.Year;
-        if (DateNaissance.Date > DateTime.Today.AddYears(-age)) age--;
+        int age = CalculerAge(DateNaissance);
 
         Resultat = $"{Nom}, vous avez {age} ans";
-        
         MessageAge = age >= 18 ? "Majeur" : "Mineur";
 
-        DateTime prochainAnniv = new DateTime(DateTime.Today.Year, DateNaissance.Month, DateNaissance.Day);
-        if (prochainAnniv < DateTime.Today)
-            prochainAnniv = prochainAnniv.AddYears(1);
-        int jours = (int)(prochainAnniv - DateTime.Today).TotalDays;
-        JoursRestants = $"{jours} jours restants avant le prochain anniversaire";
+        int jours = (int)(ProchainAnniversaire(DateNaissance) - DateTime.Today).TotalDays;
+        JoursRestants = jours == 0
+            ? "Joyeux anniversaire !"
+            : $"{jours} jours restants avant le prochain anniversaire";
 
         ResultatVisible = true;
         NaviguerResultatCommand.Rafraichir();
@@ -90,14 +87,27 @@ public class CalculateurViewModel : BaseViewModel
 
     private async void NaviguerResultat()
     {
-        int age = DateTime.Today.Year - DateNaissance.Year;
-        if (DateNaissance.Date > DateTime.Today.AddYears(-age)) age--;
-
         var navigationParameter = new Dictionary<string, object>
         {
             { "nom", Nom },
-            { "age", age.ToString() }
+            { "age", CalculerAge(DateNaissance).ToString() }
         };
-        await Microsoft.Maui.Controls.Shell.Current.GoToAsync(nameof(Views.ResultatPage), navigationParameter);
+        await Shell.Current.GoToAsync(nameof(Views.ResultatPage), navigationParameter);
+    }
+
+    private static int CalculerAge(DateTime dateNaissance)
+    {
+        int age = DateTime.Today.Year - dateNaissance.Year;
+        if (dateNaissance.Date > DateTime.Today.AddYears(-age))
+            age--;
+        return age;
+    }
+
+    private static DateTime ProchainAnniversaire(DateTime dateNaissance)
+    {
+        DateTime anniv = dateNaissance.AddYears(DateTime.Today.Year - dateNaissance.Year);
+        if (anniv.Date < DateTime.Today)
+            anniv = anniv.AddYears(1);
+        return anniv;
     }
 }
